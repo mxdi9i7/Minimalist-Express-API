@@ -5,30 +5,33 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://admin:pass@ds153869.mlab.com:53869/order');
+const { mongoUrl } = require('./db')
 
-const createItems = require('./api/items/create')
+mongoose.connect(mongoUrl);
 
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
-  console.log('connected to database')
+  console.log('Connected to database was successful!')
 });
 
 var index = require('./api/index');
+const createUser = require('./api/user/create')
+const readUser = require('./api/user/read')
 
 var app = express();
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', index);
-app.use('/api/items/create', createItems);
+app.use('/api/user/create', createUser)
+app.use('/api/user/read', readUser)
+
+
+app.listen(3000);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -45,7 +48,7 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.send(err);
 });
 
 module.exports = app;
